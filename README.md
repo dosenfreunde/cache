@@ -1,3 +1,3 @@
 # cache
 
-* [docs](https://dosenfreunde.github.io/cache/)
+* [docs](https://dosenfreunde.github.io/geocache/)
