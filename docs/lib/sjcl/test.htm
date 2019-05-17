@@ -1,0 +1,58 @@
+<html>
+<head>
+  <title>JavaScript SJCL Test</title>
+  <script src="sjcl.js"></script>
+  <script>
+  <!--
+    function onButtonAESencrypt() {
+      try {
+        var l_plaintext = document.forms["gui"].aes_plaintext.value
+          , l_password = document.forms["gui"].aes_password.value
+          , l_shipper = sjcl.encrypt(l_password, l_plaintext);
+        document.forms["gui"].aes_shipper.value = l_shipper;
+      } catch(e) {
+        alert("onButtonAESencrypt-Error: "+e);
+      }
+    }
+    function onButtonAESdecrypt() {
+      try {
+        var l_shipper = document.forms["gui"].aes_shipper.value
+          , l_password = document.forms["gui"].aes_password.value
+          , l_plaintext = sjcl.decrypt(l_password, l_shipper);
+        document.forms["gui"].aes_plaintext.value = l_plaintext;
+      } catch(e) {
+        alert("onButtonAESdecrypt-Error: "+e);
+      }
+    }
+    function onButtonSHA256() {
+      try {
+        var l_plaintext = document.forms["gui"].sha256_plaintext.value
+          , l_hashbit = sjcl.hash.sha256.hash(l_plaintext)
+          , l_hash = sjcl.codec.hex.fromBits(l_hashbit);  
+        document.forms["gui"].sha256_hash.value = l_hash;
+      } catch(e) {
+        alert("onButtonSHA256-Error: "+e);
+      }
+    }    
+  //-->
+  </script>
+</head>
+<body>
+  <h1>JavaScript SJCL Test</h1>
+  <hr/>
+  <form name="gui">
+    AES
+    <input name="aes_plaintext" type="text" value="plaintext">
+    <input name="aes_password" type="text" value="password">
+    <input type="button" value="AES encrypt" onClick="onButtonAESencrypt()">
+    <input type="button" value="AES decrypt" onClick="onButtonAESdecrypt()">
+    <input name="aes_shipper" type="text" value="" size=180">
+    <hr/>
+    SHA256
+    <input name="sha256_plaintext" type="text" value="plaintext">
+    <input type="button" value="SHA256" onClick="onButtonSHA256()">
+    <input name="sha256_hash" type="text" value="" size="80">  96d62e2abd3e42de5f50330fb8efc4c5599835278077b21e9aa0b33c1df07a1c
+  </form>
+  </form>
+</body>
+</html>
