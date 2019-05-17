@@ -4,3 +4,4 @@
 # Location  : /geocache/lib/md5/md5.min.js
 
 https://raw.githubusercontent.com/blueimp/JavaScript-MD5/master/js/md5.min.js
+https://dosenfreunde.github.io/geocache/lib/md5/test.htm
