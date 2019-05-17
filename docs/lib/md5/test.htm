@@ -1,0 +1,28 @@
+<html>
+<head>
+  <title>JavaScript MD5 Test</title>
+  <script src="md5.min.js"></script>
+  <script>
+  <!--
+    function onButtonMD5() {
+      try {
+        var l_plaintext = document.forms["gui"].plaintext.value
+          , l_md5hash = md5(l_plaintext);
+        document.forms["gui"].md5hash.value = l_md5hash;
+      } catch(e) {
+        alert("onButtonMD5-Error: "+e);
+      }
+    }
+  //-->
+  </script>
+</head>
+<body>
+  <h1>JavaScript MD5 Test</h1>
+  <hr/>
+  <form name="gui">
+    <input name="plaintext" type="text" value="plaintext">
+    <input type="button" value="MD5" onClick="onButtonMD5()">
+    <input name="md5hash" type="text" value="" size="40"> f2bc5b1d869870d7688f71b2d87030bd
+  </form>
+</body>
+</html>
