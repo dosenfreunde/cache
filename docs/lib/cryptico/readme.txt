@@ -4,3 +4,5 @@
 
 https://raw.githubusercontent.com/wwwtyro/cryptico/master/cryptico.min.js
 https://dosenfreunde.github.io/geocache/lib/cryptico/test.htm
+https://dosenfreunde.github.io/geocache/lib/cryptico/poc-rsa-clientserver.htm
+https://dosenfreunde.github.io/geocache/lib/cryptico/poc-rsa-geochecker.htm

@@ -1,0 +1,172 @@
+<html>
+<head>
+  <title>RSA-Geochecker (Proof-of-Concept)</title>
+  <script src="cryptico.min.js"></script>
+  <script>
+  <!--
+  function onLoadBody() {
+    try {
+      var l_dfGui = document.forms["gui"]
+        , l_cLocationHash = document.location.hash
+        , l_cLocationEval = null
+        , l_cLocationJson = null
+      ;
+      if (l_cLocationHash.length > 2) {
+        l_cLocationHash = decodeURI(l_cLocationHash.substring(1));
+        l_cLocationEval = "l_cLocationJson = "+l_cLocationHash+";";
+        eval(l_cLocationEval);
+        l_dfGui.gcv_rsa_keybitlen.value = l_cLocationJson.bitlen;
+        l_dfGui.gcv_rsa_serverpublickey.value = l_cLocationJson.srvkey;
+        l_dfGui.gcv_rsa_encryptmessage.value = l_cLocationJson.encmsg;
+        l_dfGui.gcv_txt_info.value = l_cLocationJson.info;
+      }
+    } catch(e) {
+      alert("onLoadBody-Error: "+e);
+    }
+  }
+  function onClickCheck() {
+    try {
+      var l_dfGui = document.forms["gui"]
+        , l_cCoordN1 = "000"+l_dfGui.gcv_n_1.value*1, l_cCoordN1 = l_cCoordN1.substring(l_cCoordN1.length-2)
+        , l_cCoordN2 = "000"+l_dfGui.gcv_n_2.value*1, l_cCoordN2 = l_cCoordN2.substring(l_cCoordN2.length-3) 
+        , l_cCoordN3 = "000"+l_dfGui.gcv_n_3.value*1, l_cCoordN3 = l_cCoordN3.substring(l_cCoordN3.length-3) 
+        , l_cCoordE1 = "000"+l_dfGui.gcv_e_1.value*1, l_cCoordE1 = l_cCoordE1.substring(l_cCoordE1.length-3) 
+        , l_cCoordE2 = "000"+l_dfGui.gcv_e_2.value*1, l_cCoordE2 = l_cCoordE2.substring(l_cCoordE2.length-3) 
+        , l_cCoordE3 = "000"+l_dfGui.gcv_e_3.value*1, l_cCoordE3 = l_cCoordE3.substring(l_cCoordE3.length-3) 
+        , l_cCoord = "N"+l_cCoordN1+" "+l_cCoordN2+"."+l_cCoordN3+" E"+l_cCoordE1+" "+l_cCoordE2+"."+l_cCoordE3
+        , l_cRsaKeyBitlen = l_dfGui.gcv_rsa_keybitlen.value*1
+        , l_cRsaChkPrivPass = encodeURI(l_cCoord)
+        , l_cRsaChkKey = cryptico.generateRSAKey(l_cRsaChkPrivPass, l_cRsaKeyBitlen)
+        , l_cRsaChkPublKey = cryptico.publicKeyString(l_cRsaChkKey)
+        , l_cRsaSrvPublKey = l_dfGui.gcv_rsa_serverpublickey.value
+        , l_cRsaEncMsg = l_dfGui.gcv_rsa_encryptmessage.value
+        , l_cRsaDecMsg = cryptico.decrypt(l_cRsaEncMsg,l_cRsaChkKey)
+        , l_cRsaTxtHint = null
+      ;
+      if (l_cRsaDecMsg.status == "success") {
+        if (l_cRsaDecMsg.signature == "verified") {
+          if (l_cRsaDecMsg.publicKeyString == l_cRsaSrvPublKey) {
+            l_cRsaTxtHint = l_cRsaDecMsg.plaintext;
+            l_dfGui.gcv_txt_hint.value = l_cRsaTxtHint;
+            alert("Geocheck = OK");
+          } else {
+            alert("Geochecker-Warning: wrong signature!");
+          }
+        } else {
+          alert("Geochecker-Warning: no signature!");
+        }
+      } else {
+        alert("Geochecker-Error: wrong coords!");
+      }
+    } catch(e) {
+      alert("onClickCheck-Error: "+e);
+    }
+  }
+  function onClickBuild() {
+    try {
+      var l_dfGui = document.forms["gui"]
+        , l_cCoordN1 = "000"+l_dfGui.gcc_n_1.value*1, l_cCoordN1 = l_cCoordN1.substring(l_cCoordN1.length-2)
+        , l_cCoordN2 = "000"+l_dfGui.gcc_n_2.value*1, l_cCoordN2 = l_cCoordN2.substring(l_cCoordN2.length-3) 
+        , l_cCoordN3 = "000"+l_dfGui.gcc_n_3.value*1, l_cCoordN3 = l_cCoordN3.substring(l_cCoordN3.length-3) 
+        , l_cCoordE1 = "000"+l_dfGui.gcc_e_1.value*1, l_cCoordE1 = l_cCoordE1.substring(l_cCoordE1.length-3) 
+        , l_cCoordE2 = "000"+l_dfGui.gcc_e_2.value*1, l_cCoordE2 = l_cCoordE2.substring(l_cCoordE2.length-3) 
+        , l_cCoordE3 = "000"+l_dfGui.gcc_e_3.value*1, l_cCoordE3 = l_cCoordE3.substring(l_cCoordE3.length-3) 
+        , l_cCoord = "N"+l_cCoordN1+" "+l_cCoordN2+"."+l_cCoordN3+" E"+l_cCoordE1+" "+l_cCoordE2+"."+l_cCoordE3
+        , l_cRsaKeyBitlen = l_dfGui.gcc_rsa_keybitlen.value*1
+        , l_cRsaChkPrivPass = encodeURI(l_cCoord)
+        , l_cRsaChkPublKey = l_dfGui.gcc_rsa_checkpublickey.value
+        , l_cRsaChkKey = cryptico.generateRSAKey(l_cRsaChkPrivPass, l_cRsaKeyBitlen)
+        , l_cRsaChkPublKey = cryptico.publicKeyString(l_cRsaChkKey)
+        , l_cRsaSrvPrivPass = l_dfGui.gcc_rsa_serverprivatepassword.value
+        , l_cRsaSrvPublKey = l_dfGui.gcc_rsa_serverpublickey.value
+        , l_cRsaSrvKey = cryptico.generateRSAKey(l_cRsaSrvPrivPass, l_cRsaKeyBitlen)
+        , l_cRsaEncMsg = null
+        , l_cRsaDecMsg = null
+        , l_cRsaTxtInfo = l_dfGui.gcc_txt_info.value
+        , l_cRsaTxtHint = l_dfGui.gcc_txt_hint.value
+        , l_cLocationJson = null
+        , l_cLocationHash = null
+      ;
+      l_dfGui.gcc_n_1.value = l_cCoordN1;
+      l_dfGui.gcc_n_2.value = l_cCoordN2;
+      l_dfGui.gcc_n_3.value = l_cCoordN3;
+      l_dfGui.gcc_e_1.value = l_cCoordE1;
+      l_dfGui.gcc_e_2.value = l_cCoordE2;
+      l_dfGui.gcc_e_3.value = l_cCoordE3;
+      l_dfGui.gcc_rsa_checkprivatepassword.value = l_cRsaChkPrivPass;
+      l_dfGui.gcc_rsa_checkpublickey.value = l_cRsaChkPublKey;
+      l_cRsaSrvPublKey = cryptico.publicKeyString(l_cRsaSrvKey);
+      l_dfGui.gcc_rsa_serverpublickey.value = l_cRsaSrvPublKey;
+      l_cRsaEncMsg = cryptico.encrypt(l_cRsaTxtHint, l_cRsaChkPublKey, l_cRsaSrvKey);
+      l_dfGui.gcc_rsa_encryptmessage.value = l_cRsaEncMsg.cipher;
+      l_cRsaDecMsg = cryptico.decrypt(l_dfGui.gcc_rsa_encryptmessage.value, l_cRsaChkKey);
+      if (l_cRsaDecMsg.plaintext != l_cRsaTxtHint) {
+        alert("onClickBuild-Fail: can't decrypt hint!");
+      }
+      l_cLocationJson = "{bitlen:"+l_cRsaKeyBitlen+",srvkey:'"+l_cRsaSrvPublKey+"',encmsg:'"+l_cRsaEncMsg.cipher+"',info:'"+l_cRsaTxtInfo+"'}";
+      l_cLocationHash = encodeURI(l_cLocationJson);
+      l_dfGui.gcc_rsa_locationhash.value = l_cLocationHash;
+      document.location.hash = l_cLocationHash;
+    } catch(e) {
+      alert("onClickBuild-Error: "+e);
+    }
+  }
+  //-->
+  </script>
+</head>
+<body onload="onLoadBody()">
+  <h1>RSA-Geochecker</h1>
+  <hr/>
+  <form name="gui">
+    <div id="gc_viewer">
+      <br/><br/><br/>
+      <center>
+        N<input name="gcv_n_1" type="text" value="48" size="3"/>°
+        <input name="gcv_n_2" type="text" value="000" size="3"/>.<input name="gcv_n_3" type="text" value="000" size="3"/>
+        <br/>
+        E<input name="gcv_e_1" type="text" value="011" size="3"/>°
+        <input name="gcv_e_2" type="text" value="000" size="3"/>.<input name="gcv_e_3" type="text" value="000" size="3"/>
+        <br/>
+        <input name="gcv_btn_check" type="button" value="CHECK" onclick="onClickCheck()"/>
+        <br/><br/>
+        Info<br/>
+        <input name="gcv_txt_info" type="text" value="" size="20" readonly="readonly"/><br/>
+        Hint<br/>
+        <input name="gcv_txt_hint" type="text" value="" size="20" readonly="readonly"/>
+        <br/><br/><br/>
+        RSA-Bitlen<br/><input name="gcv_rsa_keybitlen" type="text" value="512"/><br/>
+        Server-Public-Key<br/><input name="gcv_rsa_serverpublickey" type="text" value="vQX34648V/hmzc5IyuKlAcVrVhLSat3GeGyqfBK117hNJyxZ8S8l9Pxg/V/xGWi0nO0zmXQC5j8HzSTzLAcrgw=="/><br/>
+        RSA-Encrypt-Message<br/><input name="gcv_rsa_encryptmessage" type="text" value="O4W62YzA7CbuvsPhOdejF12U8YSk3BpvxVF1lqbGHUBah47R/yfjcfU6IQpDZR0rGSrJZ7hlbsnZGFDnOam30A==?LtWCRPdo62yFVjGyfcl+4C5DHJK8mLDt6CTGvd81TRNar2UhR/2QwjzpzejhzO6+yX5/QQGWDO7Epul4cnBxN3h/d3lYFiXyxkamr+lVLzn82E+cfX7FQKrljfBZBP0y0ZOKVh8LmygfvHPCT0fiZBi5FGTPVTKXDdDierCmKn5CkFbdghxJPRtuVimPRewWqEhnmcYZ9vd8PtG8zPR3P6vrxitEV5AeO62uBwcvnfmMRgQlGBs2rYnkw4btVwVJgF8yqnUFzMZWeqopQ31iaaYfo8PosanjqRSD+HKSQkEL92FJFhmpdTcp3EHp4o6XrWRKNDFt5I4RxvvwLYCWFFSZZswkvd7ew0XJwdDntpg="/><br/>
+      </center>
+    </div>
+    <br/><br/><br/>
+    <hr/>
+    <div id="gc_creator">
+      <br/><br/><br/>
+      <center>
+        Info<br/><input name="gcc_txt_info" type="text" value="Info" size="20"/><br/>
+        Hint<br/><input name="gcc_txt_hint" type="text" value="Hint" size="20"/><br/>
+        <br/>
+        N<input name="gcc_n_1" type="text" value="48" size="3"/>°
+        <input name="gcc_n_2" type="text" value="000" size="3"/>.<input name="gcc_n_3" type="text" value="000" size="3"/>
+        <br/>
+        E<input name="gcc_e_1" type="text" value="011" size="3"/>°
+        <input name="gcc_e_2" type="text" value="000" size="3"/>.<input name="gcc_e_3" type="text" value="000" size="3"/>
+        <br/>
+        <input name="gcc_btn_build" type="button" value="BUILD" onclick="onClickBuild()"/>
+        <br/><br/>
+        RSA-Bitlen<br/><input name="gcc_rsa_keybitlen" type="text" value="512"/><br/>
+        Server-Private-Password<br/><input name="gcc_rsa_serverprivatepassword" type="text" value="password"/><br/>
+        Server-Public-Key<br/><input name="gcc_rsa_serverpublickey" type="text" value="vQX34648V/hmzc5IyuKlAcVrVhLSat3GeGyqfBK117hNJyxZ8S8l9Pxg/V/xGWi0nO0zmXQC5j8HzSTzLAcrgw=="/><br/>
+        Check-Private-Password<br/><input name="gcc_rsa_checkprivatepassword" type="text" value="" title="Nxx°xxx.xxx Exxx°xxx.xxx"/><br/>
+        Check-Public-Key<br/><input name="gcc_rsa_checkpublickey" type="text" value=""/><br/>
+        RSA-Encrypt-Message<br/><input name="gcc_rsa_encryptmessage" type="text" value=""/><br/>
+        RSA-Location-Hash<br/><input name="gcc_rsa_locationhash" type="text" value=""/><br/>
+        <br/>
+        <br/>
+        <a href="#%7Bbitlen:1024,srvkey:'hN63OaQAkt50ARmlQFpIpBwW3JH8ezt3l2w6ZWxgERJebf9WfDP+21Nu4wb2hj8O72nIhlbOItLDJj73fxe2VAqONCVPBiGRYxR19LFxcETEKz3EYZeQbgP83Oyv6Y9/cyF5BDlL6aP+xNDHgQVG1dtSL4HtgheX7BJI83OB3Nc=',encmsg:'TqaHQpDV3+W4JyAlJDKZlotIAJnjTx5UrCnypPWkAmztD3OfUYe5xCxVdbZUz8ElDoiwiVplafVAwqkYeBclaXv15L8xazP/meeGL8cdDxun01/VCOUwwcUHrOqIfz6K8iGlCbqXgpvX2GPjJhbyZZk0W/wLbmBas+zKTwjXAts=?HkspQoQH4aE0baXt9nQc7IGYVa+FismI1P03PED4Qnf4AcLUVyrgNHkmxdGi1RMZ4QV3T3GZb15O2Smi7cqdDJ3CDUw1vEzvHp/qzPb54rQRqiir0AAznpQtQ1cLIy92UqO94W/dbOP5WGjcNBLxGZ6ZjaYPUCw3+xe3uS7j7oYXlxJGnTITvHgv6TRQ43aLnuhBD8Bi8svtZTkUSvMiHjQhrzPW9k0jtsxhR5uUMP+HbYjW9GuchkNczxKONztP9nvS2jE24O758IOZ4bwAMSX1lGoB/e49Uk8cZjO7o7thuXbIcBohf26uHzQDrAKmqTv8AkOPn8vbTswm23m9ik+KUjBIWVkOqLxv2uI/Ct0Gt0fWm99Utdtr3Hg3iPhB8jXmsFDeLeUE8kB7tQ1cFoBxCL9mdKiZTABAm/lNlPn1+BK9o+AJBrk6e4DISPC4N03CYtOfJjNty+RaYTRg6S4P+vEB1kZlihnD0mf3u3QAUiMPmoZfKSjgjrtAne27tyRGh+02l/wh6fRpC/5vWNvoUX7ta04NU1Y2/sMUfhXRWBYKN7yLY0H5dh4U7IubFuyrrzLfX/UTyCY4xRCung==',info:'N.123%20E.456'%7D">Demo: N48°000.123 E011°000.456</a>
+      </center>
+    </div>
+  </form>
+</body>
+</html>

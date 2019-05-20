@@ -1,0 +1,160 @@
+<html>
+<head>
+  <title>RSA-Client-Server (Proof-of-Concept)</title>
+  <script src="cryptico.min.js"></script>
+  <script>
+  <!--
+    var g_rsakey = null;
+    function onButtonRSAkeygen() {
+      try {
+        var l_password = document.forms["gui"].iot_server1_password.value
+          , l_bitlen = document.forms["gui"].iot_server1_bitlen.value*1
+          , l_rsakey = cryptico.generateRSAKey(l_password, l_bitlen)
+          , l_rsakey_publicstr = cryptico.publicKeyString(l_rsakey);
+        document.forms["gui"].iot_server1_publickey.value = l_rsakey_publicstr;
+        document.forms["gui"].iot_client2_serverpublickey.value = l_rsakey_publicstr;
+        document.forms["gui"].iot_server3_password.value = l_password;
+        document.forms["gui"].iot_server3_bitlen.value = l_bitlen;
+        document.forms["gui"].iot_server3_publickey.value = l_rsakey_publicstr;
+        document.forms["gui"].iot_client4_serverpublickey.value = l_rsakey_publicstr;
+      } catch(e) {
+        alert("onButtonRSAkeygen-Error: "+e);
+      }
+    }
+    function onButtonRSArequest() {
+      try {
+        var l_plaintext = document.forms["gui"].iot_client2_request.value
+          , l_serverpublickey = document.forms["gui"].iot_client2_serverpublickey.value
+          , l_password = document.forms["gui"].iot_client2_password.value
+          , l_bitlen = document.forms["gui"].iot_client2_bitlen.value*1
+          , l_rsakey = null
+          , l_shipper = null;
+        if (l_password == "") {
+          l_password = Math.ceil(Math.random()*99999999+35791317)+"";
+          document.forms["gui"].iot_client2_password.value = l_password;
+        }
+        l_rsakey = cryptico.generateRSAKey(l_password, l_bitlen);
+        l_shipper = cryptico.encrypt(l_plaintext, l_serverpublickey, l_rsakey);
+        document.forms["gui"].iot_client2_publickey.value = cryptico.publicKeyString(l_rsakey);
+        document.forms["gui"].iot_client2_requestshipper.value = l_shipper.cipher;
+        document.forms["gui"].iot_server3_requestshipper.value = l_shipper.cipher;
+        document.forms["gui"].iot_client4_password.value = l_password;
+        document.forms["gui"].iot_client4_bitlen.value = l_bitlen;
+      } catch(e) {
+        alert("onButtonRSArequest-Error: "+e);
+      }
+    }
+    function onButtonRSAresponse() {
+      try {
+        var l_shipper = document.forms["gui"].iot_server3_requestshipper.value
+          , l_password = document.forms["gui"].iot_server3_password.value
+          , l_bitlen = document.forms["gui"].iot_server3_bitlen.value*1
+          , l_rsakey = cryptico.generateRSAKey(l_password, l_bitlen)
+          , l_request = cryptico.decrypt(l_shipper, l_rsakey)
+          , l_response = null
+          , l_shipper = null
+          ;
+        if (l_request.signature == "unsigned") {
+          document.forms["gui"].iot_server3_clientpublickey.value = "unsigned";
+          document.forms["gui"].iot_server3_request.value = "";
+          document.forms["gui"].iot_server3_response.value = "";
+          document.forms["gui"].iot_server3_responseshipper.value = "";
+          document.forms["gui"].iot_client4_responseshipper.value = "";
+        } else {
+          l_response = "re:"+l_request.plaintext;
+          l_shipper = cryptico.encrypt(l_response, l_request.publicKeyString, l_rsakey);
+          document.forms["gui"].iot_server3_clientpublickey.value = l_request.publicKeyString;
+          document.forms["gui"].iot_server3_request.value = l_request.plaintext;
+          document.forms["gui"].iot_server3_response.value = l_response;
+          document.forms["gui"].iot_server3_responseshipper.value = l_shipper.cipher;
+          document.forms["gui"].iot_client4_responseshipper.value = l_shipper.cipher;
+        }
+      } catch(e) {
+        alert("onButtonRSAresponse-Error: "+e);
+      }
+    }
+
+    function onButtonRSArequestresponse() {
+      try {
+        var l_serverpublickey = document.forms["gui"].iot_client4_serverpublickey.value
+          , l_shipper = document.forms["gui"].iot_client4_responseshipper.value
+          , l_password = document.forms["gui"].iot_client4_password.value
+          , l_bitlen = document.forms["gui"].iot_client4_bitlen.value*1
+          , l_rsakey = cryptico.generateRSAKey(l_password, l_bitlen)
+          , l_response = cryptico.decrypt(l_shipper, l_rsakey)
+          ;
+        if (l_response.signature == "unsigned") {
+          document.forms["gui"].iot_client4_frompublickey.value = "unsigned";
+          document.forms["gui"].iot_client4_serverresponse.value = "";
+        } else {
+          if (l_response.publicKeyString == l_serverpublickey) {
+            document.forms["gui"].iot_client4_frompublickey.value = "verified ok";
+            document.forms["gui"].iot_client4_serverresponse.value = l_response.plaintext;
+          } else {
+            document.forms["gui"].iot_client4_frompublickey.value = "verified wrong";
+            document.forms["gui"].iot_client4_serverresponse.value = "";
+          }
+        }
+      } catch(e) {
+        alert("onButtonRSArequestresponse-Error: "+e);
+      }
+    }
+  //-->
+  </script>
+</head>
+<body>
+  <h1>RSA-Request-Response for IoT (Proof-of-Concept)</h1>
+  <ul>
+    <li><b>Server-Password</b> private and not shared public</li>
+    <li><b>Server-Public-Key</b> embedded into application of the client</li>
+    <li><b>Client-Password</b> randomized by the client</li>
+    <li><b>Client-Public-Key</b> embedded into request as signature</li>
+  </ul>
+  <u>communication</u>:
+  <ul>
+    <li><b>Request-Client</b> request encrypted with Server-Public-Key by client</li>
+    <li><b>Request-Transport</b> request can't decrypt by attackers</li>
+    <li><b>Request-Server</b> request decrypted with Server-Public-Password by server</li>
+    <li><b>Response-Server</b> response encrypted with Client-Public-Key by server</li>
+    <li><b>Response-Transport</b> response can't decrypt by attackers</li>
+    <li><b>Response-Client</b> response decrypted with Client-Private-Password by client</li>
+  </ul>
+  <hr/>
+  <form name="gui">
+    <b>SERVER</b><br/>
+    <font color="red">SERVER PASSWORD</font> <input name="iot_server1_password" type="text" value="serverpassword" size="40"> 
+    BITLEN <input name="iot_server1_bitlen" type="text" value="512"><br/>
+    <input type="button" value="RSA KEYGEN" onClick="onButtonRSAkeygen()"><br/> 
+    <i><font color="green">SERVER PUBLIC KEY</font></i> <input name="iot_server1_publickey" type="text" value="" size="120" readonly="readonly"><br/>
+    <hr/>
+    <b>CLIENT request to SERVER</b><br/>
+    <i><font color="green">SERVER PUBLIC KEY</font></i> <input name="iot_client2_serverpublickey" type="text" value="unFHbI2xAIUhxqOxVUKFWPqD+bnlp0JIpibN9YwvO9rYYgshdkhww1BAhTEtqgOqVJOHXahQF1J5uB/52QR6FQ==" size="120" readonly="readonly"><br/>
+    <font color="red">CLIENT PASSWORD</font> <input name="iot_client2_password" type="text" value="" size="40"> 
+    BITLEN <input name="iot_client2_bitlen" type="text" value="512"><br/>
+    <font color="red">CLIENT REQUEST</font> <input name="iot_client2_request" type="text" value="request"><br/>
+    <input type="button" value="RSA REQUEST" onClick="onButtonRSArequest()"><br/>
+    <i><font color="green">CLIENT PUBLIC KEY</font></i> <input name="iot_client2_publickey" type="text" value="" size="40"><br/>
+    <i><font color="green">SHIPPER</font></i> <input name="iot_client2_requestshipper" type="text" value="" size="120" readonly="readonly"><br/>
+    <hr/>
+    <b>SERVER response to CLIENT</b><br/>
+    <i><font color="green">SHIPPER</font></i> <input name="iot_server3_requestshipper" type="text" value="pn8xHuheg8hxRzYHR2ZTodP4OaSEckpIohZzsPC/3nNSVfWX75iR7WGfQUh5O2BGa/HAsDpeqpZXz98XeezQOQ==?ISbtsYbdoizOnMqcfES7Pyhm+8mZ1Eh8K8Xgs9USqH513dHnNI6O5Omdq//ZnaI30hRjZNtAvcdk1bvA1w7zZDiiCatWo3L7ex7Nh7dzuxbSnwSVNhNrIr5Stx++oTlovEr0otcDFbqsQOxEp3r7m6vq4k0ly87rAqyGI9HM1Xg2Lasdyq50Vv/e6486Nu+q/BlG71yqdcAEixtn3cwkha7VxwD2EdjJ82ePxG+bbETpK1/3DlEqBfESJkhB34lWfa16RyuN+4NMjH6FerUjEun5aqBbtW4IcZUHjKqUSToWuAe9UtipzWQMtbA3lJiR+v6yoEl4Gbjiv4Y4VLL6HZbEAK3gTxd/5LE3dOkrLCY=" size="120" readonly="readonly"><br/>
+    <i><font color="red">SERVER PASSWORD</font></i> <input name="iot_server3_password" type="text" value="serverpassword" size="40" readonly="readonly"> 
+    <i>BITLEN</i> <input name="iot_server3_bitlen" type="text" value="512" readonly="readonly"><br/>
+    <i><font color="green">SERVER PUBLIC KEY</font></i> <input name="iot_server3_publickey" type="text" value="unFHbI2xAIUhxqOxVUKFWPqD+bnlp0JIpibN9YwvO9rYYgshdkhww1BAhTEtqgOqVJOHXahQF1J5uB/52QR6FQ==" size="120" readonly="readonly"><br/>
+    <input type="button" value="RSA RESPONSE" onClick="onButtonRSAresponse()"><br/>
+    <i><font color="green">CLIENT PUBLIC KEY</font></i> <input name="iot_server3_clientpublickey" type="text" value="" size="40" readonly="readonly"><br/>
+    <i><font color="red">CLIENT REQUEST</font></i> <input name="iot_server3_request" type="text" value="" size="40" readonly="readonly"><br/>
+    <i><font color="red">SERVER RESPONSE</font></i> <input name="iot_server3_response" type="text" value="" size="40" readonly="readonly"><br/>
+    <i><font color="green">SHIPPER</font></i> <input name="iot_server3_responseshipper" type="text" value="" size="120" readonly="readonly"><br/>
+    <hr/>
+    <b>CLIENT response from SERVER</b><br/>
+    <i><font color="green">SHIPPER</font></i> <input name="iot_client4_responseshipper" type="text" value="M9Sy1MZeqUXUWbIwKjz3jolJNDqxj8nobewFj83neAVq7TK4+5OoylnjB93T/vuJWycSgJOSN8jrS8Jqu8PPAg==?GL7DThSsxBr++BzZyBssiJW44MGmuxhb++DimcAGZrxrU6W5pYevQdH4WmPu8JGhMGTxXw1ntQ7WZr7yHi+8u2P42Pa/gsDHzRN/eH1yF6fnUvC+HqEZJdZPHxd7gaqVfA1RdS2dNxAm/0A77RzucoDDg2yAhbw+vSpsQicFV9LAWnw48H5Z+SAO6ICYd0e2hWIgh0zvfZzAiZuEXTtwtms7vTnPiNEmUqUXA+pzAwwr8BPGEQPGhIxHSI5wdlU4aal/SULZC23UeIscjtd/IzXfNbiP+oJmr82MF5znTguaG8E4W5SLEu5hr2GX8kx14OWVnTA+Mn/wnD33rG5Pz385PUGev4IrgGfwKEovAWGhUk2iQ40d2s2CCKRsjF7v" size="120" readonly="readonly"><br/>
+    <i><font color="green">SERVER PUBLIC KEY</font></i> <input name="iot_client4_serverpublickey" type="text" value="unFHbI2xAIUhxqOxVUKFWPqD+bnlp0JIpibN9YwvO9rYYgshdkhww1BAhTEtqgOqVJOHXahQF1J5uB/52QR6FQ==" size="120" readonly="readonly"><br/>
+    <i><font color="red">CLIENT PASSWORD</font></i> <input name="iot_client4_password" type="text" value="01-f6-5e-01-9d-e3" size="40" readonly="readonly"> 
+    <i>BITLEN</i> <input name="iot_client4_bitlen" type="text" value="512" readonly="readonly"><br/>
+    <input type="button" value="RSA RQUEST-RESPONSE" onClick="onButtonRSArequestresponse()"><br/>
+    <i><font color="green">FROM PUBLIC KEY</font></i> <input name="iot_client4_frompublickey" type="text" value="" size="40" readonly="readonly"><br/>
+    <i><font color="red">SERVER RESPONSE</font></i> <input name="iot_client4_serverresponse" type="text" value="" size="40" readonly="readonly"><br/>
+  </form>
+</body>
+</html>
