@@ -1,0 +1,137 @@
+<html>
+<head>
+  <title>JavaScript RSA Test</title>
+  <script src="cryptico.min.js"></script>
+  <script>
+  <!--
+    var g_rsakey = null;
+    function onButtonRSAkeygen() {
+      try {
+        var l_password = document.forms["gui"].key_password.value
+          , l_bitlen = document.forms["gui"].key_bitlen.value*1
+          , l_rsakey = cryptico.generateRSAKey(l_password, l_bitlen)
+          , l_rsakey_publicstr = cryptico.publicKeyString(l_rsakey)
+          , l_rsakey_publicid = cryptico.publicKeyID(l_rsakey_publicstr);
+        document.forms["gui"].key_rsakey_public.value = l_rsakey_publicstr;
+        document.forms["gui"].key_rsakey_publicid.value = l_rsakey_publicid;
+      } catch(e) {
+        alert("onButtonRSAkeygen-Error: "+e);
+      }
+    }
+    function onButtonRSAencrypt() {
+      try {
+        var l_plaintext = document.forms["gui"].rsaencrypt_plaintext.value
+          , l_publickey = document.forms["gui"].rsaencrypt_publickey.value
+          , l_shipper = document.forms["gui"].rsaencrypt_shipper.value
+          , l_rsakey = null;
+        l_shipper = cryptico.encrypt(l_plaintext, l_publickey);
+        document.forms["gui"].rsaencrypt_shipper.value = l_shipper.cipher;
+      } catch(e) {
+        alert("onButtonRSAencrypt-Error: "+e);
+      }
+    }
+    function onButtonRSAdecrypt() {
+      try {
+        var l_plaintext = document.forms["gui"].rsadecrypt_plaintext.value
+          , l_password = document.forms["gui"].rsadecrypt_password.value
+          , l_bitlen = document.forms["gui"].rsadecrypt_bitlen.value*1
+          , l_shipper = document.forms["gui"].rsadecrypt_shipper.value
+          , l_rsakey = cryptico.generateRSAKey(l_password, l_bitlen);
+        l_plaintext = cryptico.decrypt(l_shipper, l_rsakey);
+        document.forms["gui"].rsadecrypt_plaintext.value = l_plaintext.plaintext;
+      } catch(e) {
+        alert("onButtonRSAdecrypt-Error: "+e);
+      }
+    }    
+    function onButtonRSAencryptsignature() {
+      try {
+        var l_plaintext = document.forms["gui"].rsaencryptsignature_plaintext.value
+          , l_publickey = document.forms["gui"].rsaencryptsignature_publickey.value
+          , l_password2 = document.forms["gui"].rsaencryptsignature_password2.value
+          , l_bitlen2 = document.forms["gui"].rsaencryptsignature_bitlen2.value*1
+          , l_rsakey2 = cryptico.generateRSAKey(l_password2, l_bitlen2)
+          , l_shipper = cryptico.encrypt(l_plaintext, l_publickey, l_rsakey2)
+          , l_publickey2 = cryptico.publicKeyString(l_rsakey2)
+          , l_publicid2 = cryptico.publicKeyID(l_publickey2);
+        document.forms["gui"].rsaencryptsignature_publicid2.value = l_publicid2;
+        document.forms["gui"].rsaencryptsignature_shipper.value = l_shipper.cipher;
+      } catch(e) {
+        alert("onButtonRSAencryptsignature-Error: "+e);
+      }
+    }
+    function onButtonRSAdecryptsignature() {
+      try {
+        var l_plaintext = document.forms["gui"].rsadecryptsignature_plaintext.value
+          , l_password = document.forms["gui"].rsadecryptsignature_password.value
+          , l_bitlen = document.forms["gui"].rsadecryptsignature_bitlen.value*1
+          , l_shipper = document.forms["gui"].rsadecryptsignature_shipper.value
+          , l_rsakey = cryptico.generateRSAKey(l_password, l_bitlen)
+          , l_publicid2 = document.forms["gui"].rsadecryptsignature_publicid2.value
+          ;
+        l_plaintext = cryptico.decrypt(l_shipper, l_rsakey);
+        if (l_plaintext.signature == "unsigned") {
+          document.forms["gui"].rsadecryptsignature_verify.value = "unsigned";
+        } else {
+          if (cryptico.publicKeyID(l_plaintext.publicKeyString) == l_publicid2) {
+            document.forms["gui"].rsadecryptsignature_verify.value = "verified ok";
+          } else {
+            document.forms["gui"].rsadecryptsignature_verify.value = "verified wrong";
+          }
+        }
+        document.forms["gui"].rsadecryptsignature_plaintext.value = l_plaintext.plaintext;
+      } catch(e) {
+        alert("onButtonRSAdecryptsignature-Error: "+e);
+      }
+    }    
+    
+  //-->
+  </script>
+</head>
+<body>
+  <h1>JavaScript RSA Test</h1>
+  <hr/>
+  <form name="gui">
+    <i>Generate repeatable public RSA key by private passphrase:</i><br/>
+    KEY
+    <input name="key_password" type="text" value="password">
+    <input name="key_bitlen" type="text" value="512">
+    <input type="button" value="KEYGEN" onClick="onButtonRSAkeygen()"> 
+    <br/>
+    PUBLICKEY <input name="key_rsakey_public" type="text" value="" size="120">
+    <br/>
+    PUBLICID <input name="key_rsakey_publicid" type="text" value="" size="40"> md5(PUBLICKEY) to verify signature
+    <hr/>
+    <i>Encrypt message with public RSA key:</i><br/>
+    PUBLICKEY <input name="rsaencrypt_publickey" type="text" value="vQX34648V/hmzc5IyuKlAcVrVhLSat3GeGyqfBK117hNJyxZ8S8l9Pxg/V/xGWi0nO0zmXQC5j8HzSTzLAcrgw==" size="120"><br/>
+    MESSAGE <input name="rsaencrypt_plaintext" type="text" value="plaintext">
+    <input type="button" value="RSA encrypt" onClick="onButtonRSAencrypt()">
+    <br/>SHIPPER <input name="rsaencrypt_shipper" type="text" value="" size="120">    
+    <hr/>
+    <i>Decrypt shipper with private RSA passphrase:</i><br/>
+    SHIPPER <input name="rsadecrypt_shipper" type="text" value="cAA+itQMqLx7iNoUUQwOgEJc1Ms/QKjdON/UPm4mYdRzxioUM9SyyjB+6fDmM9xgI7pdv9RtfteMj70xvRsTpA==?5skMbDZoDjKdbGYHcHhjOd0DU7snml9QQP26tP0ta9U=" size="120">
+    <br/>
+    <input name="rsadecrypt_password" type="text" value="password">
+    <input name="rsadecrypt_bitlen" type="text" value="512">
+    <input type="button" value="RSA decrypt" onClick="onButtonRSAdecrypt()">
+    <input name="rsadecrypt_plaintext" type="text" value="">
+    <hr/>
+    <i>Encrypt message with public RSA key and private signature:</i><br/>
+    PUBLICKEY <input name="rsaencryptsignature_publickey" type="text" value="vQX34648V/hmzc5IyuKlAcVrVhLSat3GeGyqfBK117hNJyxZ8S8l9Pxg/V/xGWi0nO0zmXQC5j8HzSTzLAcrgw==" size="120"><br/>
+    FROM <input name="rsaencryptsignature_password2" type="text" value="password2">
+    <input name="rsaencryptsignature_bitlen2" type="text" value="512">
+    MESSAGE <input name="rsaencryptsignature_plaintext" type="text" value="plaintext">
+    <input type="button" value="RSA encrypt + sign" onClick="onButtonRSAencryptsignature()">
+    <br/>PUBLICID <input name="rsaencryptsignature_publicid2" type="text" size="40">
+    <br/>SHIPPER <input name="rsaencryptsignature_shipper" type="text" value="" size="120">
+    <hr/>
+    <i>Decrypt shipper with private RSA passphrase and verify signature:</i><br/>
+    FROM PUBLICID <input name="rsadecryptsignature_publicid2" type="text" value="bc35c38d1612254ce40b2e55c0497151" size="40"><br/>
+    SHIPPER <input name="rsadecryptsignature_shipper" type="text" value="D93xnxtgV7EJVBmM+YP4Aepu5/sO8MeUTm8odGNeUeaihBVxONZ4Hzxe7yO7kj4WDvy0qW7Ws7+RC6iE00ngVA==?4ZdkMzKsJBFpxxLRXPCc45FWdonYnvdDun3R84SGo6g8Wml2lIylQIa40nIRv/kTK/P0PqNM/QS4WjgvXS4hB+e7kK+ZQKdMGdwjxlNOZ20MWTfMFeVO75HJUzimCa+ByOrjFLokTr7mwC2/0jm06sG6QFFVpPyxaprw9+znUaifQB9fj25vWNQWxErjijQOW/PIMQEIiP2UZlDQ7ZJWMAMieMQWVn0RukSwLXtSQb2Ue9t+WABHyNz429yvYEq2HDGBZL/q8VYPw29N17sDAW5Hdbw+1ovxc5hkaNMZl4XHMherpMbGEzNhGJ9zbGD3h18k1jKpD/3rOh5dLDm4F70ucidgKdW79cZbfirN0YesJD6FMBqbvQRiB/DIEEOe" size="120"><br/>
+    <input name="rsadecryptsignature_password" type="text" value="password">
+    <input name="rsadecryptsignature_bitlen" type="text" value="512">
+    <input type="button" value="RSA decrypt + sign check" onClick="onButtonRSAdecryptsignature()">
+    <input name="rsadecryptsignature_plaintext" type="text" value="">
+    <input name="rsadecryptsignature_verify" type="text" value="">
+  </form>
+</body>
+</html>
