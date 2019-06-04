@@ -1,0 +1,324 @@
+<html>
+<head>
+  <title>JavaScript RSA Cipher</title>
+  <script src="cryptico.min.js"></script>
+  <script>
+  <!--
+    var g_rsakey_to = null
+      , g_rsakey_from = null
+      , g_urlhash_json = null
+    ;
+    function onLoadBody() {
+      try {
+        var l_parameter = document.location.hash
+          , l_json = {}
+        ;
+        g_rsakey_to = null;
+        g_rsakey_from = null;
+        g_urlhash_json = null;
+        if (l_parameter.length>1) {
+          l_parameter = l_parameter.substring(1,l_parameter.length);
+          if (l_parameter.substring(0,3)=="%7B") {
+            l_parameter = decodeURI(l_parameter);
+          }
+          eval("g_urlhash_json = "+l_parameter);
+          if (typeof g_urlhash_json.rsakeyto === "string") {
+            document.forms["gui"].publickey_to.value = g_urlhash_json.rsakeyto;
+          }
+          if (typeof g_urlhash_json.rsabitlen === "string") {
+            document.forms["gui"].keybitlen_to.value = g_urlhash_json.rsabitlen;
+            document.forms["gui"].keybitlen_from.value = g_urlhash_json.rsabitlen;
+          }
+          if (typeof g_urlhash_json.rsacipher === "string") {
+            document.forms["gui"].txt_ciphertext.value = g_urlhash_json.rsacipher;
+          }
+          if (typeof g_urlhash_json.rsafromid === "string") {
+            document.forms["gui"].publicid_from.value = g_urlhash_json.rsafromid;
+          }
+        }
+      } catch(e) {
+        alert("onLoadBody-Error: "+e);
+      }
+    }
+    function onButtonRSAlinkTo() {
+      try {
+        var l_publickey_to = document.forms["gui"].publickey_to.value
+          , l_keybitlen_to = document.forms["gui"].keybitlen_to.value*1
+          , l_linkto = document.location+'#'
+        ;
+        l_linkto = l_linkto.substring(0,l_linkto.indexOf('#'));
+        l_linkto = l_linkto+encodeURI("#{rsakeyto:'"+l_publickey_to+"',rsabitlen:'"+l_keybitlen_to+"'}");
+        document.getElementById('link_encrypt').setAttribute('href',l_linkto);
+        prompt('link to receive encrypted messages',l_linkto);
+        // alert(l_linkto);
+        // alert(document.getElementById('link_encrypt').getAttribute('href'));
+      } catch(e) {
+        alert("onButtonRSAkeygenTo-Error: "+e);
+      }
+    }
+    function onButtonRSAkeygenTo() {
+      try {
+        var l_publickey_to = document.forms["gui"].publickey_to.value
+          , l_password_to = document.forms["gui"].password_to.value
+          , l_keybitlen_to = document.forms["gui"].keybitlen_to.value*1
+        ;
+        if (l_password_to == "") {
+          alert('Error: empty passwort!\n\nEnter password to generate new RSA key for encryption.');
+        } else {
+          alert('Please wait ... generate new receiver key for encryption ('+l_keybitlen_to+'-bit).');
+          g_rsakey_to = cryptico.generateRSAKey(l_password_to, l_keybitlen_to);
+          document.forms["gui"].publickey_to.value = cryptico.publicKeyString(g_rsakey_to);
+          document.forms["gui"].publicid_to.value = cryptico.publicKeyID(document.forms["gui"].publickey_to.value);
+          document.forms["gui"].password_to.value = '';
+          alert('Ready ... new receiver key for encryption generated ('+l_keybitlen_to+'-bit).');
+        }
+        onButtonRSAlinkTo();
+      } catch(e) {
+        alert("onButtonRSAkeygenTo-Error: "+e);
+      }
+    }
+    function onButtonRSAkeygenFrom() {
+      try {
+        var l_publicid_from = document.forms["gui"].publicid_from.value
+          , l_password_from = document.forms["gui"].password_from.value
+          , l_keybitlen_from = document.forms["gui"].keybitlen_from.value*1
+        ;
+        if (l_password_from == "") {
+          alert('Error: empty passwort!\n\nEnter password to generate new RSA key for encryption.');
+        } else {
+          alert('Please wait ... generate new sender key for signature ('+l_keybitlen_from+'-bit).');
+          g_rsakey_from = cryptico.generateRSAKey(l_password_from, l_keybitlen_from);
+          document.forms["gui"].publickey_from.value = cryptico.publicKeyString(g_rsakey_from);
+          document.forms["gui"].publicid_from.value = cryptico.publicKeyID(document.forms["gui"].publickey_from.value);
+          document.forms["gui"].password_from.value = '';
+          alert('Ready ... new sender key for signature generated ('+l_keybitlen_from+'-bit).');
+        }
+      } catch(e) {
+        alert("onButtonRSAkeygenFrom-Error: "+e);
+      }
+    }
+    
+    function onButtonRSAencryptTo() {
+      try {
+        var l_publickey_to = document.forms["gui"].publickey_to.value
+          , l_password_to = document.forms["gui"].password_to.value
+          , l_keybitlen_to = document.forms["gui"].keybitlen_to.value*1
+          , l_password_from = document.forms["gui"].password_from.value
+          , l_keybitlen_from = document.forms["gui"].keybitlen_from.value*1
+          , l_plaintext = document.forms["gui"].txt_plaintext.value
+          , l_cipher = ''
+          , l_linkto = document.location+'#'
+        ;
+        // validate
+        if (l_plaintext.length == 0) {
+          alert('Error: text is empty!\nEnter some text for encryption.');
+          return false;
+        }
+        if (g_rsakey_to == null && l_publickey_to.length == 0 && l_password_to.length == 0) {
+          alert('Error: receiver key is empty!\nEnter private password of receiver to generate public key.');
+          return false;
+        }
+        if (g_rsakey_from == null && l_password_from.length == 0) {
+          if (!confirm('Warning: encrypt without signature?\nEnter private password of sender to sign the cipher.')) {
+            return false;
+          }
+        }
+        // receiver key
+        if (l_publickey_to.length > 0) {
+          // use receiver public key
+        } else if (l_password_to.length > 0) {
+          onButtonRSAkeygenTo();
+          l_publickey_to = document.forms["gui"].publickey_to.value;
+        } else if (g_rsakey_to != null) {
+          document.forms["gui"].publickey_to.value = cryptico.publicKeyString(g_rsakey_to);
+          document.forms["gui"].password_to.value = '';
+          l_publickey_to = document.forms["gui"].publickey_to.value
+        } else {
+          alert('Error: receiver key is undefined!');
+          return false;
+        }
+        // sender key
+        if (l_password_from.length > 0) {
+          onButtonRSAkeygenFrom();
+          l_publicid_from = document.forms["gui"].publicid_from.value;
+        } else if (g_rsakey_from != null) {
+          document.forms["gui"].publicid_from.value = cryptico.publicKeyString(g_rsakey_from);
+          document.forms["gui"].password_from.value = '';
+          l_publicid_from = document.forms["gui"].publicid_from.value
+        }
+        // encrypt
+        l_linkto = l_linkto.substring(0,l_linkto.indexOf('#'));
+        if (g_rsakey_from == null) {
+          l_cipher = cryptico.encrypt(l_plaintext, l_publickey_to);
+          document.forms["gui"].txt_ciphertext.value = l_cipher.cipher;
+          l_linkto = l_linkto+encodeURI("#{rsacipher:'"+l_cipher.cipher+"'}");
+        } else {
+          l_cipher = cryptico.encrypt(l_plaintext, l_publickey_to, g_rsakey_from)
+          document.forms["gui"].txt_ciphertext.value = l_cipher.cipher;
+          l_linkto = l_linkto+encodeURI("#{rsafromid:'"+cryptico.publicKeyID(cryptico.publicKeyString(g_rsakey_from))+"',rsabitlen:'"+l_keybitlen_from+"',rsacipher:'"+l_cipher.cipher+"'}");
+        }
+        document.getElementById('link_decrypt').setAttribute('href',l_linkto);
+        prompt('message link',l_linkto);
+      } catch(e) {
+        alert("onButtonRSAencryptTo-Error: "+e);
+      }
+    }
+    function onButtonRSAdecryptTo() {
+      try {
+        var l_password_to = document.forms["gui"].password_to.value
+          , l_keybitlen_to = document.forms["gui"].keybitlen_to.value*1
+          , l_publicid_from = document.forms["gui"].publicid_from.value
+          , l_ciphertext = document.forms["gui"].txt_ciphertext.value
+          , l_plaintext = ''
+        ;
+        // validate
+        if (l_ciphertext.length == 0) {
+          alert('Error: cipher is empty!');
+          return false;
+        }
+        if (g_rsakey_to == null && l_password_to.length == 0) {
+          alert('Error: receiver password is empty!');
+          return false;
+        }
+        // receiver key
+        if (l_password_to.length > 0) {
+          onButtonRSAkeygenTo();
+          l_publickey_to = document.forms["gui"].publickey_to.value;
+        } else if (g_rsakey_to != null) {
+          document.forms["gui"].publickey_to.value = cryptico.publicKeyString(g_rsakey_to);
+          document.forms["gui"].password_to.value = '';
+          l_publickey_to = document.forms["gui"].publickey_to.value
+        } else {
+          alert('Error: receiver key is undefined!');
+          return false;
+        }
+        // decrypt
+        l_plaintext = cryptico.decrypt(l_ciphertext, g_rsakey_to);
+        if (l_plaintext.signature == "unsigned" && l_publicid_from.length == 0) {
+          alert('Note: unsigned cipher!');
+        } else if (l_plaintext.signature == "unsigned" && l_publicid_from.length > 0) {
+          alert('Warning: unsigned cipher not match with sender!');
+        } else if (l_publicid_from != cryptico.publicKeyID(l_plaintext.publicKeyString)) {
+          document.forms["gui"].publickey_from.value = l_plaintext.publicKeyString;
+          alert('Error: wrong signature!');
+        } else {
+          document.forms["gui"].publickey_from.value = l_plaintext.publicKeyString;
+          alert('Info: signature valide.');
+        }
+        document.forms["gui"].txt_plaintext.value = l_plaintext.plaintext;
+      } catch(e) {
+        alert("onButtonRSAdecryptTo-Error: "+e);
+      }
+    }
+    function onButtonRSAencryptFrom() {
+      try {
+        var l_password_to = document.forms["gui"].password_to.value
+          , l_keybitlen_to = document.forms["gui"].keybitlen_to.value*1
+          , l_publickey_from = document.forms["gui"].publickey_from.value
+          , l_password_from = document.forms["gui"].password_from.value
+          , l_keybitlen_from = document.forms["gui"].keybitlen_from.value*1
+          , l_plaintext = document.forms["gui"].txt_plaintext.value
+          , l_cipher = ''
+          , l_linkto = document.location+'#'
+        ;
+        // validate
+        if (l_plaintext.length == 0) {
+          alert('Error: text is empty!\nEnter some text for encryption.');
+          return false;
+        }
+        if (g_rsakey_from == null && l_publickey_from.length == 0 && l_password_from.length == 0) {
+          alert('Error: sender key is empty!\nEnter public key of sender to encrypt response.');
+          return false;
+        }
+        if (g_rsakey_to == null && l_password_to.length == 0) {
+          if (!confirm('Warning: encrypt without signature?\nEnter private password of receiver to sign the cipher.')) {
+            return false;
+          }
+        }
+        // sender key
+        if (l_publickey_from.length > 0) {
+          // use sender public key
+        } else if (l_password_from.length > 0) {
+          onButtonRSAkeygenFrom();
+          l_publickey_from = document.forms["gui"].publickey_from.value;
+        } else if (g_rsakey_from != null) {
+          document.forms["gui"].publickey_from.value = cryptico.publicKeyString(g_rsakey_from);
+          document.forms["gui"].password_from.value = '';
+          l_publickey_from = document.forms["gui"].publickey_from.value
+        } else {
+          alert('Error: sender key is undefined!');
+          return false;
+        }
+        // receiver key
+        if (l_password_to.length > 0) {
+          onButtonRSAkeygenTo();
+          l_publicid_to = document.forms["gui"].publicid_to.value;
+        } else if (g_rsakey_to != null) {
+          document.forms["gui"].publicid_to.value = cryptico.publicKeyString(g_rsakey_to);
+          document.forms["gui"].password_to.value = '';
+          l_publicid_to = document.forms["gui"].publicid_to.value
+        }
+        // encrypt
+        l_linkto = l_linkto.substring(0,l_linkto.indexOf('#'));
+        if (g_rsakey_to == null) {
+          l_cipher = cryptico.encrypt(l_plaintext, l_publickey_from);
+          document.forms["gui"].txt_ciphertext.value = l_cipher.cipher;
+          l_linkto = l_linkto+encodeURI("#{rsacipher:'"+l_cipher.cipher+"'}");
+        } else {
+          l_cipher = cryptico.encrypt(l_plaintext, l_publickey_from, g_rsakey_to)
+          document.forms["gui"].txt_ciphertext.value = l_cipher.cipher;
+          l_linkto = l_linkto+encodeURI("#{rsafromid:'"+cryptico.publicKeyID(cryptico.publicKeyString(g_rsakey_to))+"',rsabitlen:'"+l_keybitlen_to+"',rsacipher:'"+l_cipher.cipher+"'}");
+        }
+        document.getElementById('link_decrypt').setAttribute('href',l_linkto);
+        prompt('message link',l_linkto);
+      } catch(e) {
+        alert("onButtonRSAencryptFrom-Error: "+e);
+      }
+    }
+  //-->
+  </script>
+</head>
+<body onload="onLoadBody()" onhashchange="onLoadBody()">
+  <h1>JavaScript RSA Cipher</h1>
+  <hr/>
+  <form name="gui">
+    
+    <table>
+      <tr>
+        <td><b>receiver:</b></td>
+        <td>key</td>
+        <td><input name="publickey_to" type="text" value="" size="16" title="public key"></td>
+        <td>id</td>
+        <td><input name="publicid_to" type="text" value="" size="16" title="public id"></td>
+        <td><input type="button" value="keygen" onClick="onButtonRSAkeygenTo()" title="RSA key for encryption and decryption"></td>
+        <td>password <input name="password_to" type="password" value="" size="8" title="private password for keygen"></td>
+        <td>bit <input name="keybitlen_to" type="text" value="2048" size="4"></td>
+      </tr>
+      <tr>
+        <td><b>sender:</b></td>
+        <td>key</td>
+        <td><input name="publickey_from" type="text" value="" size="16" title="public key"></td>
+        <td>id</td>
+        <td><input name="publicid_from" type="text" value="" size="16" title="public id (hash of public key)"></td>
+        <td><input type="button" value="keygen" onClick="onButtonRSAkeygenFrom()" title="RSA key for signature and response"></td>
+        <td>password <input name="password_from" type="password" value="" size="8" title="private password for keygen"></td>
+        <td>bit <input name="keybitlen_from" type="text" value="2048" size="4"></td>
+      </tr>
+    </table>
+    <br/>
+    text:<br/>
+    <textarea name="txt_plaintext" cols="80" rows="10"></textarea>
+    <br/><br/>
+    <input type="button" value="encrypt request (s->r)" onClick="onButtonRSAencryptTo()" title="encrypt with public key of receiver (optional signature)"> 
+    <input type="button" value="decrypt request (r<-s)" onClick="onButtonRSAdecryptTo()" title="decrypt with private key of receiver"> 
+    <input type="button" value="encrypt response (r=>s)" onClick="onButtonRSAencryptFrom()" title="encrypt with public key of sender (requires signature)"> 
+    <input type="reset" value="reset" onClick="onLoadBody()"> 
+    <br/><br/>
+    cipher:<br/>
+    <textarea name="txt_ciphertext" cols="80" rows="10"></textarea>
+  </form>
+  <a id="link_encrypt" href="#">encrypt request link</a> | 
+  <a id="link_decrypt" href="#">decrypt request link</a>
+  <br/><br/>
+</body>
+</html>
